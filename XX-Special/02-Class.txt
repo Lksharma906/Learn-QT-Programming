@@ -1,0 +1,225 @@
+- Blueprint/ template/ recipie
+- Represents an abstraction.
+- Every object is instantiated.
+- Instance of a class.
+- Each class can have multiple instances.
+- Objects are independent.
+
+``` cpp
+class <name> {
+// Members are private by default.
+<modifiers>
+	<member variables>
+	<meember functions>
+};
+```
+
+REF: 
+1. https://en.cppreference.com/w/cpp/language/classes <- About Classes.
+2. https://en.cppreference.com/w/cpp/language/class <- Class Declaration.
+3. 
+
+
+## CONSTRUCTOR.
+- Invoked automatically during instantiation.
+- Used for initialisation.
+- Doesn't have a return type.
+- Same name as class.
+- Can be overloaded.
+	- Default
+	- Parametarized.
+	- Copy
+	- Delegating
+	- Inheriting
+
+### Default Constructor
+- Constructor with no arguments.
+``` cpp
+Car c; //invokes default constructor.
+```
+- Automatically synthesised by compiler.
+	- If no other user defined constructor exist.
+
+### Parameterized Constructor.
+- Constructor that accept one or more arguments.
+- Used to initialise the objects with user defined values.
+- Never synthesised by the compiler.
+- Blocks auto generation of default constructor.
+
+## DESTRUCTOR
+- Function that is invoked automatically when an object is destroyed.
+- Used for releasing resources that may have been allocated in the constructor.
+- Cannot be overloaded.
+- No arguments.
+- Same name as class start with "~".
+- Can be synthesised by compiler.
+
+
+## NON STATIC DATA MEMBER INITIALIZERS.
+- Convenient way of initializing class members with values during declaration.
+```cpp
+class Class_name {
+	<type1> <var1> {<initializer>};
+	<type2> <var2>=<initializer>;
+};
+```
+- Ensures the members are initialized with valid values.
+- Can be used to initialize any type.
+- Compiler automatically generates the initialization code.
+- User can also initialize them in user-defined constructor. It will take precedence over compiler initialization.
+- In nonstatic data member initializer auto is not allowed.
+```cpp
+class Car {
+	float fuel{0};
+	float speed{0};
+	char *p = new char;
+	char *q{};
+	// auto i = 5; // In nonstatic data member initializer auto is not allowed.
+}
+```
+
+
+## STATIC MEMBER VARIABLES.
+- Member variable qualified with static keyword.
+- Not part of the object.
+- Belong to the class.
+- Only one copy exists.
+- Shared between objects.
+- **Cannot be initialized inside the class
+- **Have to be defined outside the class for initialization.
+- **Default initialization assigns the default value of that type.
+
+``` cpp
+//Car.h
+class Car {
+static int totalCars;
+};
+```
+
+```cpp
+//Car.cpp
+int Car::totalCars;
+```
+
+## STATIC MEMBER FUNCTIONS.
+- functions qualified with static keyword.
+- Required only in declaration.
+- Belong to class and not the objects.
+- Do not receive this pointer.
+- Cannot access non-static members of the class.
+- Can be invoked directly through the class name as well as through object of class.
+
+
+
+
+
+
+
+
+
+
+
+
+## THIS POINTER
+- A hidden pointer passed to member function.
+- Points to the object that invoked the member function.
+- Provided as a keyword that is meaningful only in member functions.
+- Can be used to access members inside the member functions.
+
+
+
+## CONSTANT MEMBER FUNCTIONS
+- Member function qualified with const keyword.
+- Both declaration and definition is qualified.
+- Such function cannot change value of member variables.
+- Useful for creating read-only functions.
+- Constant objects can invoke only constant member functions.
+
+![[02-cpp-const.cpp]] 
+[] - get above example from obsidian and sync it with GitHub.
+
+
+## COPY CONSTRUCTOR.
+- Creates copy of objects's state in another object.
+- Synthesised automatically.
+- Default implementation copies values.
+- User defined implementation required for pointer members.
+
+- The issue of shalow copy can occur when ever we do 
+	- call a copy constructor.
+	- When an object is passed into a function by value.
+	- or when a function is returning an object by value.
+	- or via copy assignment operator.
+
+- The compiler provided implementation or copy constructor or copy assignment operator will mostly do a shallow copy.
+
+```cpp
+Int * p1 = new int (15);
+Int *p2 = p1; // shallow copy. <address is copied>
+
+Int * p3 = new int (*p1); // deep copy. <value is copied>
+```
+
+## RULE OF 3.
+- All should be defined if a user implements any of them.
+	- Destructor.
+	- Copy constructor.
+	- Copy assignment operator.
+
+- Not implementing user defined function can lead to memory leak or shallow copy.
+
+
+
+## DELEGATING CONSTRUCTOR.
+- Allows a constructor to invoke another constructor.
+- Replacement for common initialization.
+- Reduce duplicate initialization code in multiple constructors.
+
+
+## Default keyword / default functions (C++ 11)
+- In C++ 11 we can initialize any variable inside class without default constructor. But in case we define a parametarized constructor compiler will not automatically synthesise a default constructor. So we need to use a default keyword for same.
+
+```cpp
+class Integer {
+int m_val {0}; // initialized here.
+public:
+	Integer() = default; // to synthesise the default constructor.
+	Integer(int val) {
+	m_val = val;
+	}
+	Integer(const Integer &) = default;
+};
+```
+- We can use default keyword with only those keywords which can be synthesise by compiler. That include destructor, copy constructor and copy assignment operator.
+
+## Delete Keyword / delete function (C++ 11).
+
+- If we do not want compiler to synthesise any function then we tell the compiler to not synthesise that function using delete keyword.
+- like in below case we do not want copy constructor be synthesised automatically by compiler.
+```cpp
+class Integer {
+int m_val {0}; // initialized here.
+public:
+	Integer() = default; // to synthesise the default constructor.
+	Integer(int val) {
+	m_val = val;
+	}
+	Integer(const Integer &) = delete; // Compiler will not synthesise it now.
+	void setVal(int val) {
+	m_val = val;
+	}
+	void setVal(float)= delete; // do not want compiler to synthesise this.
+};
+
+int main() {
+{
+Integer i1;
+i1.setVal(10);
+i1.setVal(11.4f);// without delete compiler might have done implicit conversion which we do not need. hence not allowed.
+
+Integer i2(i1); // Not allowed now.
+return 0;
+}
+```
+- Unlike default, delete can be used on any kind of function.
+- 
